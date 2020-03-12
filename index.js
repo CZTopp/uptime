@@ -18,11 +18,14 @@ const server = http.createServer((req, res) => {
   //trim extraneous slashes from both sides
   var trimmedPath = path.replace(/^\/+|\/+$/g, '');
 
+  //get http method
+  var method = req.method.toLowerCase();
+
   //send response
   res.end('Welcome to Uptime\n');
 
   //log the path requested
-  console.log('Request received on path: ' + trimmedPath);
+  console.log('Request received on path: ' + trimmedPath + ' with this method: ' + method);
 
 });
 //start server listen on port

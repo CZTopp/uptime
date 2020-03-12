@@ -14,9 +14,11 @@ const server = http.createServer((req, res) => {
 
   //get the path from the url
   var path = parsedUrl.pathname;
-
   //trim extraneous slashes from both sides
   var trimmedPath = path.replace(/^\/+|\/+$/g, '');
+
+  //get query string as an object
+  var queryStringObject = parsedUrl.query;
 
   //get http method
   var method = req.method.toLowerCase();
@@ -25,7 +27,7 @@ const server = http.createServer((req, res) => {
   res.end('Welcome to Uptime\n');
 
   //log the path requested
-  console.log('Request received on path: ' + trimmedPath + ' with this method: ' + method);
+  console.log('Request received on path: ' + trimmedPath + ' with this method: ' + method + 'and these query string parameters: ', queryStringObject);
 
 });
 //start server listen on port

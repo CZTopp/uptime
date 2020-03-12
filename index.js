@@ -23,11 +23,13 @@ const server = http.createServer((req, res) => {
   //get http method
   var method = req.method.toLowerCase();
 
+  //get headers into object
+  var headers = req.headers;
   //send response
   res.end('Welcome to Uptime\n');
 
   //log the path requested
-  console.log('Request received on path: ' + trimmedPath + ' with this method: ' + method + 'and these query string parameters: ', queryStringObject);
+  console.log('Request received on path: ' + trimmedPath + ' with this method: ' + method + 'and these headers: ', headers);
 
 });
 //start server listen on port

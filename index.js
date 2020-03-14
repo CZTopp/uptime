@@ -11,37 +11,67 @@ const StringDecoder = require('string_decoder').StringDecoder;
 const server = http.createServer((req, res) => {
 
   //get url aßnd parse it
-  var parsedUrl = url.parse(req.url, true);
+  const parsedUrl = url.parse(req.url, true);
 
   //get the path from the url
-  var path = parsedUrl.pathname;
+  const path = parsedUrl.pathname;
   //trim extraneous slashes from both sides
-  var trimmedPath = path.replace(/^\/+|\/+$/g, '');
+  const trimmedPath = path.replace(/^\/+|\/+$/g, '');
 
   //get query string as an object
-  var queryStringObject = parsedUrl.query;
+  const queryStringObject = parsedUrl.query;
 
   //get http method
-  var method = req.method.toLowerCase();
+  const method = req.method.toLowerCase();
 
   //get headers into object if any
-  var headers = req.headers;
+  const headers = req.headers;
 
   //get the payload if any
   //create a decoder that decodes utf -8
   //create a string that can hold the entire decoded string
   //on req data event append result onto the buffer/payload string one piece at a time
-  var decoder = new StringDecoder('utf-8');
-  var buffer = '';
+  const decoder = new StringDecoder('utf-8');
+  let buffer = '';
   req.on('data', (data) => {
     buffer += decoder.write(data);
   });
   req.on('end', () => {
     buffer += decoder.end();
-    //send response
-    res.end('Welcome to Uptime\n');
-    //log the path requested
-    console.log('Request received with this payload ', buffer);
+
+    //choose handler response should got to
+    //if not found use not found
+    let chosenHandler = typeof (router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
+
+    //construct data obj to send to handler
+    let data = {
+      'trimmedPath': trimmedPath,
+      'queryStringObject': queryStringObject,
+      'method': method,
+      'headers': headers,
+      'payload': buffer
+    };
+
+    //route request to handler specified in router
+    chosenHandler(data, (statusCode, payload) => {
+
+      //use code called back or default status code
+      statusCode = typeof (statusCode) == 'number' ? statusCode : 200;
+
+      //use the payload called back or default payload
+      payload = typeof (payload) == 'object' ? payload : {};
+
+      //convert payload to string
+      let payloadString = JSON.stringify(payload);
+
+      //send response
+      res.writeHead(statusCode);
+
+      res.end('Welcome to Uptime\n' + payloadString);
+
+      //log the path requested
+      console.log('Returning this response: ', statusCode, payloadString);
+    });
   });
 
 });
@@ -49,3 +79,18 @@ const server = http.createServer((req, res) => {
 server.listen(3000, () => {
   console.log("Listening on port 3000")
 });
+
+const handlers = {};
+
+handlers.sample = (data, callback) => {
+  //callback a http status code and a payload obj
+  callback(406, { 'name': 'sample handler' });
+};
+
+handlers.notFound = (data, callback) => {
+  callback(403);
+};
+
+const router = {
+  "sample": handlers.sample
+}
